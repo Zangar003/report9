@@ -131,10 +131,39 @@ var tmpl = template.Must(template.ParseGlob("static/templates/*"))
 
 func upload(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
-	selDB, err := db.Query("SELECT * FROM upload ORDER BY id DESC")
-	if err != nil {
-		panic(err.Error())
+	var selDB *sql.Rows
+
+	if r.Method == "POST" {
+		rating := r.FormValue("raiting")
+		price := r.FormValue("price")
+
+		if rating == "raiting" {
+			sel, err := db.Query("SELECT * FROM `upload` ORDER BY star ASC")
+			selDB = sel
+			if err != nil {
+				panic(err.Error())
+			}
+		} else if price == "price" {
+			sel, err := db.Query("SELECT * FROM `upload` ORDER BY price ASC")
+			selDB = sel
+			if err != nil {
+				panic(err.Error())
+			}
+		} else {
+			sel, err := db.Query("SELECT * FROM upload ORDER BY id DESC")
+			selDB = sel
+			if err != nil {
+				panic(err.Error())
+			}
+		}
+	} else {
+		sel, err := db.Query("SELECT * FROM upload ORDER BY id DESC")
+		selDB = sel
+		if err != nil {
+			panic(err.Error())
+		}
 	}
+
 	upld := upfile{}
 	res := []upfile{}
 	for selDB.Next() {
@@ -234,8 +263,6 @@ func delete(w http.ResponseWriter, r *http.Request) {
 	log.Println("deleted successfully")
 	defer db.Close()
 	http.Redirect(w, r, "/", 301)
-	// db.Close()
-
 }
 
 func handleRequest() {
@@ -247,6 +274,7 @@ func handleRequest() {
 	http.HandleFunc("/", upload)
 	http.HandleFunc("/uploadfiles", uploadFiles)
 	http.HandleFunc("/dele", delete)
+
 	log.Println("Server started on: http://localhost:9000")
 
 	http.ListenAndServe(":9000", nil)
