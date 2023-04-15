@@ -88,6 +88,7 @@ func loginPage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	http.Redirect(res, req, "/", 301)
 	res.Write([]byte("Hello  " + databaseUsername))
 	defer db.Close()
 }
@@ -121,10 +122,11 @@ type upfile struct {
 	ID        int
 	Fname     string
 	Item_type string
-	Star      int
+	Star      sql.NullInt32
 	Path      string
 	Price     int
 	Count     int
+	Comment   sql.NullString
 }
 
 var tmpl = template.Must(template.ParseGlob("static/templates/*"))
@@ -167,10 +169,12 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	upld := upfile{}
 	res := []upfile{}
 	for selDB.Next() {
-		var id, star, price int
+		var id, price int
 		var fname, item_type, path string
+		var comment sql.NullString
+		var star sql.NullInt32
 
-		err = selDB.Scan(&id, &fname, &item_type, &star, &path, &price)
+		err = selDB.Scan(&id, &fname, &item_type, &star, &path, &price, &comment)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -180,6 +184,7 @@ func upload(w http.ResponseWriter, r *http.Request) {
 		upld.Star = star
 		upld.Path = path
 		upld.Price = price
+		upld.Comment = comment
 		res = append(res, upld)
 
 	}
@@ -204,7 +209,7 @@ func uploadFiles(w http.ResponseWriter, r *http.Request) {
 	}
 	fname := r.FormValue("fname")
 	item_type := r.FormValue("item_type")
-	star := r.FormValue("star")
+	// star := r.FormValue("star")
 	price := r.FormValue("price")
 
 	r.ParseMultipartForm(200000)
@@ -237,13 +242,13 @@ func uploadFiles(w http.ResponseWriter, r *http.Request) {
 
 		tempFile.Write(fileBytes)
 
-		insForm, err := db.Prepare("INSERT INTO upload(fname, item_type, star, path, price) VALUES(?,?,?,?, ?)")
+		insForm, err := db.Prepare("INSERT INTO upload(fname, item_type, path, price) VALUES(?,?,?,?)")
 		if err != nil {
 			panic(err.Error())
 		} else {
 			log.Println("data insert successfully . . .")
 		}
-		insForm.Exec(fname, item_type, star, filepath, price)
+		insForm.Exec(fname, item_type, filepath, price)
 
 		log.Printf("Successfully Uploaded File\n")
 		defer db.Close()
@@ -260,11 +265,31 @@ func delete(w http.ResponseWriter, r *http.Request) {
 		panic(err.Error())
 	}
 	delForm.Exec(emp)
-	log.Println("deleted successfully")
+	log.Println("deleted successfully", emp)
 	defer db.Close()
 	http.Redirect(w, r, "/", 301)
 }
+func star(w http.ResponseWriter, r *http.Request) {
+	db := dbConn()
+	// emp := r.URL.Query().Get("id")
+	if r.Method != "POST" {
+		http.ServeFile(w, r, "static/templates/uploadfile.html")
+		return
+	}
+	star := r.FormValue("star")
+	emp := r.FormValue("id")
+	com := r.FormValue("comment")
 
+	delForm, err := db.Prepare("UPDATE `upload` SET  star = ? , comment = ? WHERE id = ?")
+	if err != nil {
+		panic(err.Error())
+	}
+	delForm.Exec(star, com, emp)
+	log.Println("Updated successfully", emp, star, com)
+
+	defer db.Close()
+	http.Redirect(w, r, "/", 301)
+}
 func handleRequest() {
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	http.HandleFunc("/login", loginPage)
@@ -274,6 +299,7 @@ func handleRequest() {
 	http.HandleFunc("/", upload)
 	http.HandleFunc("/uploadfiles", uploadFiles)
 	http.HandleFunc("/dele", delete)
+	http.HandleFunc("/star", star)
 
 	log.Println("Server started on: http://localhost:9000")
 

@@ -46,7 +46,13 @@
 			   font-size: 20px;
 			   padding-left: 10px;
 		   margin-top: 10px;
-    }
+    	}
+		
+		
+		
+		
+		
+		
    </style>
 </head>
 
@@ -54,15 +60,16 @@
 	<div style="width: 400px; border: 1px solid; margin: 20px; ">
 	<form style="margin: 20px;" method="post" action="/" >
 		<h3>To Filter Choose your  features:</h3>				
-		<input type="checkbox"  value="raiting" name="raiting"><label for="raiting" checked="checked" >Raiting</label><br>
-		<input type="checkbox"  value="price" name="price"><label for="price" checked="checked">Price</label><br>
-		<button class="submit">Submit</button>			
+		<input  type="checkbox"  value="raiting" name="raiting"><label for="raiting" checked="checked" >Raiting</label><br>
+		<input  type="checkbox"  value="price" name="price"><label for="price" checked="checked">Price</label><br>
+		<button type="submit" class="btn btn-primary">Submit</button>	
+				
 	</form>
 	</div>
   	
 <div class="upload-wrap" id="myid">
  
-		<h2 style="text-align: center;">Upload your File </h2>	
+		
 		
 			
 			<br>
@@ -85,11 +92,29 @@
 				<div class="up-extn">
 					
 					<h4 class="flex">Title: {{ .Fname }} <span> Item type :{{ .Item_type }} </span>  </h4>
-					<p> rating {{ .Star }}</p>
+					<p> rating {{ .Star.Int32 }}</p>
 					<p>price: {{ .Price }}$</p>
+					<p>Comment: {{ .Comment.String }}</p>
 					<div class="up-progress">
 						<span class="w70"></span>
 					</div>
+					<form style="margin: 10px;" method="post" action="/star">
+						<!-- <input style="border: 1px solid; border-radius: 3px;"type="number" name="star" placeholder="1-10"/><br> -->
+						<p>raiting 1-5</p>
+						<select class="form-control" id="exampleFormControlSelect1" name="star">
+							<option>1</option>
+							<option>2</option>
+							<option >3</option>
+							<option>4</option>
+							<option>5</option>
+						</select>
+						<div class="form-group">
+							<label for="exampleFormControlTextarea1">write comments</label>
+							<textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="comment"></textarea>
+						  </div>
+						<input type="checkbox"  value="{{ .ID }}" name="id"><label for="id" checked="checked" >I agree</label><br></a>
+						<button type="submit" class="btn btn-primary">Submit</button>	
+					</form>
 					<a href="/dele?id={{ .ID }}" class="delete" onclick="return confirm('Are you sure you want to Remove?');"> <img src="static/assets/img/delete.svg"> </a>
 					
 				</div>
@@ -107,15 +132,20 @@
 
  <div class ="all">
 	<div class ="left">
+		<h2 style="text-align: center;">Upload your File </h2>	
 			<form method="post" action="/uploadfiles" enctype="multipart/form-data">
-			    <input class="input" type="text" name ="fname" placeholder="Title"><br>
-				<input class="input" type="text" name ="item_type" placeholder="type"><br>
-				<input class="input" type="number" name ="star" placeholder="raiting"><br>
-				<input class="input"  type="number" name ="price" placeholder="price"><br> 
-			
-				 <input style="margin-top:20px" type="file" name="files" multiple required>
-			
-				<button class="ripple submit">Submit</button>			
+			    <input  class="form-control" type="text" name ="fname" placeholder="Title"><br>
+				<input class="form-control" type="text" name ="item_type" placeholder="type"><br>
+				<!-- <input  class="form-control" type="number" name ="star" placeholder="raiting"><br> -->
+				<input   class="form-control" type="number" name ="price" placeholder="price"><br> 
+			 
+				 <!-- <input style="margin-top:20px" type="file" name="files" multiple required> -->
+				 <div class="custom-file">
+					<input  name="files" type="file" class="custom-file-input" id="validatedCustomFile" multiple required>
+					<label class="custom-file-label" for="validatedCustomFile">Choose file...</label>
+					<div class="invalid-feedback">Example invalid custom file feedback</div>
+				  </div>
+				 <button style="margin: 20px;" type="submit" class="btn btn-primary">Submit</button>	
 			</form>
 		</div>
 										
