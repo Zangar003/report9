@@ -36,8 +36,11 @@ func star(w http.ResponseWriter, r *http.Request) {
 						  </div>
 						<input type="checkbox"  value="{{ .ID }}" name="id"><label for="id" checked="checked" >I agree</label><br></a>
 						<button type="submit" class="btn btn-primary">Submit</button>	
-					</form>
+												</form>
           
+	  
+	  
+	  
           This code snippet is a Go function called star that handles an HTTP POST request. When a POST request is received, the function reads the values submitted in the form, updates a row in the upload table of a MySQL database with the submitted star rating and comment, and redirects the user back to the home page.
 
 Here is a more detailed breakdown of the code:
